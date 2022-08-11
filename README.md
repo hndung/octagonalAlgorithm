@@ -1,4 +1,4 @@
-# Octagonal algorithm
+# Octagonal cut algorithm
 A fast algorithm for 2D convex hull problem
 
 ### Install libraries

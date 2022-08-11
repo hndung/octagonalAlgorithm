@@ -1,4 +1,4 @@
-# octagonal algorithm
+# Octagonal algorithm
 A fast algorithm for convex hull problem
 
 ### Install libraries

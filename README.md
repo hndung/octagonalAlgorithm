@@ -14,3 +14,9 @@ A fast algorithm for convex hull problem
 >        julia -t numberOfThreads mainOctagonal.jl
 - Run quickhull
 >        julia mainQH.jl
+
+### Setting
+- Benchmarking mode
+> Set benchmarking = true in the main functions
+- Export the convex hull to file
+> Set benchmarking = false and exportResult = true in the main functions

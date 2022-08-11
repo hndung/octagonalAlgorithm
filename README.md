@@ -1,5 +1,5 @@
 # Octagonal algorithm
-A fast algorithm for convex hull problem
+A fast algorithm for 2D convex hull problem
 
 ### Install libraries
 - Open a terminal and go to the directory containing the code

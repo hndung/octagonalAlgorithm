@@ -8,9 +8,9 @@ A fast algorithm for 2D convex hull problem
 
 ### Run the programs
 - Open a terminal and go to the directory containing the code 
-- Run octogonal algorithm in sequential mode
+- Run octogonal cut algorithm in sequential mode
 >        julia mainOctagonal.jl
-- Run octogonal algorithm in parallel mode
+- Run octogonal cut algorithm in parallel mode
 >        julia -t numberOfThreads mainOctagonal.jl
 - Run quickhull
 >        julia mainQH.jl

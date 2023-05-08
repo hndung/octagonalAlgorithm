@@ -223,7 +223,7 @@ function outsidePoints(points::Matrix{Float64},
         push!(outside_points, u)
     end
     if (v>=startIndex && v<=endIndex && a*points[v,1]+b*points[v,2]<c)
-        push!(outside_points, u)
+        push!(outside_points, v)
     end
     return outside_points
 end

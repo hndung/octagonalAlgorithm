@@ -9,20 +9,15 @@ using Base.Threads
 
 include("utils.jl")
 
-const splitFactor = 4
-const TimeOutput = TimerOutput()
+const splitFactor = 16
+# Create a TimerOutput, this is the main type that keeps track of everything.
+const TimeOutputOct = TimerOutput()
 
 struct MinMaxType
     min::Float64
     minIndex::Int
     max::Float64
     maxIndex::Int
-end
-
-function mySplit(startIndex, endIndex, numberOfSet)
-    step = Int(ceil((endIndex-startIndex+1)/numberOfSet))
-    grid = collect(startIndex:step:endIndex)
-    push!(grid, endIndex+1)
 end
 
 function minMaxCollect(result::Vector{MinMaxType})
@@ -164,8 +159,8 @@ function findCrossDirectionalMinMax(v::Matrix{Float64}, a::Vector{Float64})
 end
 
 function find8ExtremePoints(points::Matrix{Float64})
-    @timeit TimeOutput "find 8 EP" begin
-        @timeit TimeOutput "first 4 EP" begin
+    @timeit TimeOutputOct "find 8 EP" begin
+        @timeit TimeOutputOct "first 4 EP" begin
             horizontalMinMax = findMinMax(points, 1)
             minX = horizontalMinMax.min
             maxX = horizontalMinMax.max
@@ -179,7 +174,7 @@ function find8ExtremePoints(points::Matrix{Float64})
             v7 = verticalMinMax.minIndex
         end
 
-        # @timeit TimeOutput "second 4 EP" begin
+        # @timeit TimeOutputOct "second 4 EP" begin
         #     diagonalMinMax = findDirectionalMinMax(points, [maxY - minY, maxX - minX])
         #     v2 = diagonalMinMax.maxIndex
         #     v6 = diagonalMinMax.minIndex
@@ -190,7 +185,7 @@ function find8ExtremePoints(points::Matrix{Float64})
 
         # calling findCrossDirectionalMinMax is a little bit faster than
         # call two times findDirectionalMinMax (see above)
-        @timeit TimeOutput "second 4 EP" begin
+        @timeit TimeOutputOct "second 4 EP" begin
             diagonalMinMax = findCrossDirectionalMinMax(points, [maxY - minY, maxX - minX])
             v2 = diagonalMinMax[1].maxIndex
             v6 = diagonalMinMax[1].minIndex
@@ -201,64 +196,64 @@ function find8ExtremePoints(points::Matrix{Float64})
     return [v1,v2,v3,v4,v5,v6,v7,v8,v1]
 end
 
-function outsidePoints(points::Matrix{Float64},
-                        u::Int,
-                        v::Int,
-                        startIndex::Int,
-                        endIndex::Int)
-    if (u==v)
-        return [u]
-    end
-    a = points[v,2] - points[u,2]
-    b = points[u,1] - points[v,1]
-    c = a*points[u,1] + b*points[u,2]
-    outside_points = Vector{Int}(undef, 0)
-    for i in startIndex:endIndex
-        if (a*points[i,1]+b*points[i,2]>=c)
-            push!(outside_points, i)
-        end
-    end
-    # Include u and v in case of numerical errors that exclude those points
-    if (u>=startIndex && u<=endIndex && a*points[u,1]+b*points[u,2]<c)
-        push!(outside_points, u)
-    end
-    if (v>=startIndex && v<=endIndex && a*points[v,1]+b*points[v,2]<c)
-        push!(outside_points, v)
-    end
-    return outside_points
-end
-
-function outsidePoints(points::Matrix{Float64}, u::Int, v::Int)
-    if (u==v)
-        return [u]
-    end
-    n = size(points, 1)
-    threadNr = nthreads()
-    if (threadNr == 1)
-        return outsidePoints(points, u, v, 1, n)
-    else
-        grid = mySplit(1, n, threadNr*splitFactor)
-        result = Vector{Vector{Int}}(undef, length(grid)-1)
-        @threads for i in 1:length(grid)-1
-            result[i] = outsidePoints(points, u, v, grid[i], grid[i+1]-1)
-        end
-        outside_points = Vector{Int}(undef, 0)
-        for i in 1:length(grid)-1
-            append!(outside_points, result[i])
-        end
-        return outside_points
-    end
-end
+# function outsidePoints(points::Matrix{Float64},
+#                         u::Int,
+#                         v::Int,
+#                         startIndex::Int,
+#                         endIndex::Int)
+#     if (u==v)
+#         return [u]
+#     end
+#     a = points[v,2] - points[u,2]
+#     b = points[u,1] - points[v,1]
+#     c = a*points[u,1] + b*points[u,2]
+#     outside_points = Vector{Int}(undef, 0)
+#     for i in startIndex:endIndex
+#         if (a*points[i,1]+b*points[i,2]>=c)
+#             push!(outside_points, i)
+#         end
+#     end
+#     # Include u and v in case of numerical errors that exclude those points
+#     if (u>=startIndex && u<=endIndex && a*points[u,1]+b*points[u,2]<c)
+#         push!(outside_points, u)
+#     end
+#     if (v>=startIndex && v<=endIndex && a*points[v,1]+b*points[v,2]<c)
+#         push!(outside_points, v)
+#     end
+#     return outside_points
+# end
+#
+# function outsidePoints(points::Matrix{Float64}, u::Int, v::Int)
+#     if (u==v)
+#         return [u]
+#     end
+#     n = size(points, 1)
+#     threadNr = nthreads()
+#     if (threadNr == 1)
+#         return outsidePoints(points, u, v, 1, n)
+#     else
+#         grid = mySplit(1, n, threadNr*splitFactor)
+#         result = Vector{Vector{Int}}(undef, length(grid)-1)
+#         @threads for i in 1:length(grid)-1
+#             result[i] = outsidePoints(points, u, v, grid[i], grid[i+1]-1)
+#         end
+#         outside_points = Vector{Int}(undef, 0)
+#         for i in 1:length(grid)-1
+#             append!(outside_points, result[i])
+#         end
+#         return outside_points
+#     end
+# end
 
 function filterRemainingPoints(points::Matrix{Float64},
                                 extremalVertices::Vector{Int})
 #    println("Get remaining points")
-    @timeit TimeOutput "filter remaining points" begin
+    @timeit TimeOutputOct "filter remaining points" begin
         remaining_points = Vector{Int}(undef, 0)
         for i in 1:8
             u = extremalVertices[i]
             v = extremalVertices[i+1]
-            append!(remaining_points, outsidePoints(points, u, v))
+            append!(remaining_points, outsidePoints(points, u, v, splitFactor))
         end
     end
     return remaining_points
@@ -267,17 +262,20 @@ end
 function octagonalCH(points, exportCH = false, exportFile = "")
     v = find8ExtremePoints(points)
     remaining_points_index = filterRemainingPoints(points, v)
-
+    # println("remaining points ", length(remaining_points_index))
     remaining_points = Matrix{Float64}(undef, length(remaining_points_index), 2)
-    @timeit TimeOutput "get remaining points" begin
+    @timeit TimeOutputOct "get remaining points" begin
         for i in 1:length(remaining_points_index)
             remaining_points[i,:] = points[remaining_points_index[i], :]
         end
     end
 
 #    println("Calling QHull")
-    @timeit TimeOutput "calling QHull" begin
+    @timeit TimeOutputOct "calling QHull" begin
         convex_hull = chull(remaining_points)
+        # vertices_index = map(v -> remaining_points_index[v], convex_hull.vertices)
+        # vertices = map(v -> points[v,:], vertices_index)
+        # println("vertices Octagonal ", length(vertices))
     end
 
     if (exportCH)

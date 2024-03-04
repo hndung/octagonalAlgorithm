@@ -9,11 +9,11 @@ using BenchmarkTools
 include("utils.jl")
 
 # Create a TimerOutput, this is the main type that keeps track of everything.
-const TimeOutput = TimerOutput()
+const TimeOutputQH = TimerOutput()
 
 function callQHull(points, exportCH =false, exportFile="")
 #    println("Calling QHull")
-    @timeit TimeOutput "calling QHull" begin
+    @timeit TimeOutputQH "calling QHull" begin
         convexHull = chull(points)
     end
 
